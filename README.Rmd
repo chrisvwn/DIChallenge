@@ -2,6 +2,7 @@
 title: "Detecting Less Sleep Using Satellite Nightlights"
 output: 
 html_document:
+  keep_md: true
 ---
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
@@ -66,3 +67,4 @@ g
 ![](figures/unnamed-chunk-2-1.png?raw=true)
 
 It seems that there is a relationship between higher levels of short sleep and higher nightlight radiances: they have a correlation of `r correl` although more work is needed to find out if this is significant. Also, this is assuming that a linear relationship exists; a non-linear model may yield a stronger relationship.
+

@@ -1,8 +1,13 @@
 ---
 title: "Detecting Less Sleep Using Satellite Nightlights"
-output: html_notebook
+output: 
+html_document:
 ---
-
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "figures/"
+)
+```
 The proposed project tries to find a link between Satellite Nightlights and shorter sleep times which can be of interest to pharmaceutical companies as well as producers of stimulants such as coffee and energy drinks.
 
 The datasets used are:
@@ -51,11 +56,13 @@ states <- merge(states, statesAggd, by.x = "state.name", by.y = "state")
 
 states$nlpersqkm <- states$NL_VIIRS_201401_SUM / states$area_sq_km
 
+correl <- cor(states$nlpersqkm, states$pctShortSleep)
+
 g <- ggplot(states, aes(x=nlpersqkm, y=pctShortSleep)) + geom_point(col="purple", size=2, alpha=0.5) + geom_smooth(method = "lm", col="red", se = F) + xlab("nighlights radiance per sq. km.") + ylab("% adults with short sleep") + ggtitle("Sleeplessness vs. Nightlights")
 
 g
 ```
-It seems that there is a relationship between higher levels of short sleep and higher nightlight radiances: they have a correlation of `cor(states$nlpersqkm, states$pctShortSleep)` although more work is needed to find out if it is significant.
 
+![](figures/unnamed-chunk-2-1.png?raw=true)
 
-
+It seems that there is a relationship between higher levels of short sleep and higher nightlight radiances: they have a correlation of `r correl` although more work is needed to find out if this is significant. Also, this is assuming that a linear relationship exists; a non-linear model may yield a stronger relationship.

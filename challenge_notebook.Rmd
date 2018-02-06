@@ -1,8 +1,14 @@
 ---
 title: "Detecting Less Sleep Using Satellite Nightlights"
-output: html_notebook
+output: 
+html_document:
+  keep_md: true
 ---
-
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "figures/"
+)
+```
 The proposed project tries to find a link between Satellite Nightlights and shorter sleep times which can be of interest to pharmaceutical companies as well as producers of stimulants such as coffee and energy drinks.
 
 The datasets used are:

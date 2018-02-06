@@ -1,0 +1,61 @@
+---
+title: "Detecting Less Sleep Using Satellite Nightlights"
+output: html_notebook
+---
+
+The proposed project tries to find a link between Satellite Nightlights and shorter sleep times which can be of interest to pharmaceutical companies as well as producers of stimulants such as coffee and energy drinks.
+
+The datasets used are:
+
+  1. NOAA Nightlights found at [https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html](https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html)
+  2. Short Sleep study by CDC found at [https://www.cdc.gov/sleep](https://www.cdc.gov/sleep)
+
+```{r}
+library(devtools)
+library(Rnightlights)
+library(pdftools)
+library(dplyr)
+library(ggplot2)
+
+pkgOptions(downloadMethod="aria", cropMaskMethod="gdal", extractMethod="gdal")
+
+states <- data.frame(state.abb, state.name)
+
+pctShortSleep <- sapply(states$state.abb, function(state)
+{
+  statePDFname <- paste0("stateShortSleep_", state, ".pdf")
+  
+  if(!file.exists(statePDFname))
+    download.file(paste0("https://www.cdc.gov/sleep/pdf/states508/FS_ShortSleepByState_", state, "_508tagged.pdf"), statePDFname)
+
+  pdftxt <- suppressMessages(pdf_text(statePDFname))
+  
+  pctShortSleep <- stringr::str_extract(pdftxt, "In 2014\\,\\s+\\d{2}\\.\\d{1}\\%\\s+\\(age-adjusted")
+  
+  pctShortSleep <- stringr::str_extract(pctShortSleep, "\\d{2}\\.\\d{1}\\%")
+  
+  pctShortSleep <- pctShortSleep[!is.na(pctShortSleep)]
+  
+  pctShortSleep <- stringr::str_extract(pctShortSleep, "\\d{2}\\.\\d{1}\\%")
+  
+  pctShortSleep <- as.numeric(gsub("\\%", "", pctShortSleep))
+})
+
+states <- cbind.data.frame(states, pctShortSleep)
+
+usNightlights <- Rnightlights::getCtryNlData(ctryCode = "USA", nlType = "VIIRS", nlPeriods = "201401", ignoreMissing = FALSE)
+
+statesAggd <- usNightlights %>% select(state, area_sq_km, NL_VIIRS_201401_SUM, NL_VIIRS_201401_MEAN) %>% group_by(state) %>% summarise_all(sum)
+
+states <- merge(states, statesAggd, by.x = "state.name", by.y = "state")
+
+states$nlpersqkm <- states$NL_VIIRS_201401_SUM / states$area_sq_km
+
+g <- ggplot(states, aes(x=nlpersqkm, y=pctShortSleep)) + geom_point(col="purple", size=2, alpha=0.5) + geom_smooth(method = "lm", col="red", se = F) + xlab("nighlights radiance per sq. km.") + ylab("% adults with short sleep") + ggtitle("Sleeplessness vs. Nightlights")
+
+g
+```
+It seems that there is a relationship between higher levels of short sleep and higher nightlight radiances: they have a correlation of `cor(states$nlpersqkm, states$pctShortSleep)` although more work is needed to find out if it is significant.
+
+
+

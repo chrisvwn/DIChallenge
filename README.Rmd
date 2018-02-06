@@ -57,14 +57,22 @@ states <- merge(states, statesAggd, by.x = "state.name", by.y = "state")
 
 states$nlpersqkm <- states$NL_VIIRS_201401_SUM / states$area_sq_km
 
+oldPar <- par(mfrow=c(2,1))
+hist(states$pctShortSleep)
+hist(states$nlpersqkm)
+par(mfrow=oldPar)
+
 correl <- cor(states$nlpersqkm, states$pctShortSleep)
 
 g <- ggplot(states, aes(x=nlpersqkm, y=pctShortSleep)) + geom_point(col="purple", size=2, alpha=0.5) + geom_smooth(method = "lm", col="red", se = F) + xlab("nighlights radiance per sq. km.") + ylab("% adults with short sleep") + ggtitle("Sleeplessness vs. Nightlights")
 
 g
 ```
-
 ![](figures/unnamed-chunk-2-1.png?raw=true)
+
+Looking at the individual variable distributions, the pctShortSleep approximates closer to a normal distribution while the nlpersqkm is skewed. The nlpersqkm variable may need normalization in order to approximate to a linear model.
+
+![](figures/unnamed-chunk-2-2.png?raw=true)
 
 It seems that there is a relationship between higher levels of short sleep and higher nightlight radiances: they have a correlation of `r correl` although more work is needed to find out if this is significant. Also, this is assuming that a linear relationship exists; a non-linear model may yield a stronger relationship.
 
